@@ -1,55 +1,64 @@
-const express = require("express");
-const cors = require("cors");
-//guardamos entre llaves
-const {users} = require("./data");
-const PORT = 8080;
+var idCount = 1;
+const data = [];
 
-//Crear la instancia de nuestro servidor
-const app = express();
-app.use(cors());
-app.use(express.json());
+document.addEventListener("DOMContentLoaded", () => {
+    // ID del formulario donde vamos a extraer los datos
+    const formulario = document.getElementById("formulario");
 
-app.get("/prueba", (req, res) => {
-    //res.send("Hola mundo");
-    res.json({mensaje:"Hola desde un json"});
-});
+    // Inputs correctos
+    const txt_task = document.getElementById("txt_task");
+    const txt_description = document.getElementById("txt_description");
+    const listaDatos = document.getElementById("hero");
 
-app.get("/users", (req, res) => {
-    res.json(users);
-});
+    formulario.addEventListener("submit", (e) => {
+        e.preventDefault();
 
-app.post("/login", (req, res) => {
-    const {name, password} = req.body;
-    const user = users.find(
-        (usr) => usr.name == name &&
-                 ust.password == password
-        );
-    if (user) {
-        res.status(200).json({token:`token-falso-${user.id}`});
-    }else{
-        res.status(401).json({error:"Usuario no valido"});
-    }
-});
+        // ✅ Usa las variables correctas
+        const task = txt_task.value.trim();
+        //VER POR QUE NO ASEPTA EL VALUE
+        const description = txt_description.value.trim();
 
-//Middleware
-const valiarToken = (req, res, next) => {
-    //const {token} = req.body;
-    const token = req.headers.authorization;
+        const newTask = {
+            id: idCount++,
+            task: task,
+            description: description,
+            status: true,
+        };
 
-    if (token) {
-        //Si nos permite entrar o nel
-        if(token.startsWith("token-falso-")) next();
-        res.status(403).json({mensaje:"Acceso denegado, token invalido"});
+        data.push(newTask);
+        data.map((taskItem) => {
+            const nuevoElemento = taskItem.status?
+            `<div class="hero_task">
+                <div class="indicador"></div>
+                <div class="group_label">
+                    <p id="mostrar-task" class="task_title">
+                    ${taskItem.task}</p>
+                    <p id="mostrar-description" class="task_description">
+                    ${taskItem.description}</p>
+                </div>
+                <div class="group_button">
+                    <button class="hero_complate">V</button>
+                    <button class="hero_delete">X</button>
+                </div>
+             </div>`:
+             `<div class="hero_task">
+                <div class="indicador_pendiente"></div>
+                <div class="group_label">
+                    <p id="mostrar-task" class="task_title">
+                    ${taskItem.task}</p>
+                    <p id="mostrar-description" class="task_description">
+                    ${taskItem.description}</p>
+                </div>
+                <div class="group_button">
+                    <button type="submit" class="hero_complate">V</button>
+                    <button type="submit" class="hero_delete">X</button>
+                </div>
+              </div>`;
+              listaDatos.innerHTML+=nuevoElemento;
+        });
 
-    }else{
-        res.status(403).json({mensaje:"Acceso denegado, no hay token"})
-    }
-} 
-
-app.get("/saludo-protegido", valiarToken, (req, res) => {
-    res.json({mensaje:"Saludo protegido"});
-})
-
-app.listen(PORT, () => {
-    console.log("Server running in http://localhost:"+PORT);
+        // Limpiar campos después de agregar la tarea
+        txt_task.value = "";
+        txt_description.value = "";
+    });
 });
